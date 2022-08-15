@@ -27,7 +27,10 @@ job_json = {
             {
                 "job_cluster_key": "PDF_cluster",
                 "notebook_task": {
-                    "notebook_path": f"01_Introduction_And_Setup"
+                    "notebook_path": f"01_Introduction_And_Setup",
+                    "base_parameters": {
+                         "reset_all_data": "true"
+                     }
                 },
                 "task_key": "PDF_01"
             },
