@@ -11,8 +11,8 @@ db_prefix = "demand_planning"
 
 # COMMAND ----------
 
-  #spark.sql(f"DROP DATABASE IF EXISTS {dbName} CASCADE")
-  #dbutils.fs.rm(cloud_storage_path, True)
+#spark.sql(f"DROP DATABASE IF EXISTS {dbName} CASCADE")
+#dbutils.fs.rm(cloud_storage_path, True)
 
 # COMMAND ----------
 
