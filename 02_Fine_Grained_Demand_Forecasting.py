@@ -16,18 +16,10 @@
 
 # COMMAND ----------
 
-user_based_data = True
-
-# COMMAND ----------
-
 # MAGIC %run ./_resources/00-setup $reset_all_data=false
 
 # COMMAND ----------
 
-if (not user_based_data):
-  cloud_storage_path = '/FileStore/tables/demand_forecasting_solution_accelerator/'
-  dbName = 'demand_db' 
-  
 print(cloud_storage_path)
 print(dbName)
 

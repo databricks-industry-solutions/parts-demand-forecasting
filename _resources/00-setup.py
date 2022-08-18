@@ -11,7 +11,8 @@ db_prefix = "demand_planning"
 
 # COMMAND ----------
 
-user_based_data = True
+  #spark.sql(f"DROP DATABASE IF EXISTS {dbName} CASCADE")
+  #dbutils.fs.rm(cloud_storage_path, True)
 
 # COMMAND ----------
 
@@ -33,12 +34,6 @@ if reset_all:
 
 spark.sql(f"""create database if not exists {dbName} LOCATION '{cloud_storage_path}/tables' """)
 spark.sql(f"""USE {dbName}""")
-
-# COMMAND ----------
-
-if (not user_based_data):
-  cloud_storage_path = '/FileStore/tables/demand_forecasting_solution_accelerator/'
-  dbName = 'demand_db' 
 
 # COMMAND ----------
 

@@ -448,7 +448,7 @@ random_mat_numbers = generate_random_strings(1000000)
 # COMMAND ----------
 
 #Create a listof all SKU's
-demand_df = spark.read.table("demand_db.part_level_demand")
+demand_df = spark.read.table(f"{dbName}.part_level_demand")
 all_skus = demand_df.select('SKU').distinct().rdd.flatMap(lambda x: x).collect()
 
 # COMMAND ----------
@@ -547,3 +547,7 @@ display(spark.sql(f"select * from {dbName}.bom"))
 # COMMAND ----------
 
 print("Ending ./_resources/01-data-generator")
+
+# COMMAND ----------
+
+
