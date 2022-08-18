@@ -16,7 +16,6 @@
 
 # COMMAND ----------
 
-#If True, all output files are in user specific databases, If False, a global database for the report is used
 user_based_data = True
 
 # COMMAND ----------
@@ -541,9 +540,3 @@ spark.sql(f"CREATE TABLE {dbName}.part_level_demand_with_forecasts USING DELTA L
 # COMMAND ----------
 
 display(spark.sql(f"SELECT * FROM {dbName}.part_level_demand_with_forecasts"))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Analyze the SKU demand
-# MAGIC You can analyze the SKU demand using Databricks' simple dashboard functionality. See   [here](https://e2-demo-field-eng.cloud.databricks.com/sql/dashboards/fa660958-35a9-4710-a393-b050dd59275a-demand-analysis?edit&o=1444828305810485&p_w27bd4a0b-88a2-422a-bda5-9363bb3e7921_sku_parameter=%5B%22LRR_0X6CLF%22%5D&p_w6280d39b-f9b1-4644-b80c-caf98965b76e_sku_parameter=%5B%22LRR_0X6CLF%22%2C%22SRL_Z61857%22%5D).
