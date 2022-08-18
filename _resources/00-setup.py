@@ -68,4 +68,4 @@ else:
 
 # COMMAND ----------
 
-
+mlflow.set_experiment('/Users/{}/parts_demand_forecasting'.format(current_user))
