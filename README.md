@@ -34,3 +34,11 @@ Certainly not! However, we think that Databricks offers an excellent platform to
 <img src="https://raw.githubusercontent.com/maxkoehlerdatabricks/demand_forcasting_sa/max/Pictures/Derive_Raw_Material_Demand_Intro.jpg" width=49%>
 <img src="https://raw.githubusercontent.com/maxkoehlerdatabricks/demand_forcasting_sa/max/Pictures/Manage_Material_Shortages_Intro.jpg" width=49%>
 
+
+&copy; 2022 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the Databricks License [https://databricks.com/db-license-source].  All included or referenced third party libraries are subject to the licenses set forth below.
+
+|Library Name|Library license | Library License URL | Library Source URL |
+|---|---|---|---|
+|hyperopt|Individual License |https://github.com/hyperopt/hyperopt/blob/master/LICENSE.txt|https://github.com/hyperopt/hyperopt|
+|networkx|BSD-3-Clause License|https://github.com/networkx/networkx/blob/main/LICENSE.txt|https://github.com/networkx/networkx|
+|graphframes|Apache-2.0 License |https://github.com/graphframes/graphframes/blob/master/LICENSE|https://github.com/graphframes/graphframes|
