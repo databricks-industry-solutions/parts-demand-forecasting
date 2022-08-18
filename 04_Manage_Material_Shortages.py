@@ -27,7 +27,7 @@ user_based_data = True
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources_outside/00-global-setup $reset_all_data=false $db_prefix=demand_level_forecasting
+# MAGIC %run ./_resources/00-setup $reset_all_data=false
 
 # COMMAND ----------
 

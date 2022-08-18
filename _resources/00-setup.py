@@ -1,28 +1,49 @@
 # Databricks notebook source
-import os
-
-# COMMAND ----------
-
 dbutils.widgets.dropdown("reset_all_data", "false", ["true", "false"], "Reset all data")
 
 # COMMAND ----------
 
-print("Starting ./_resources/00-setup")
+import os
+import re
+import mlflow
+spark.conf.set("spark.databricks.cloudFiles.schemaInference.sampleSize.numFiles", "10")
+db_prefix = "demand_planning"
 
 # COMMAND ----------
 
-#If True, all output files are in user specific databases, If False, a global database for the report is used
 user_based_data = True
 
 # COMMAND ----------
 
-# MAGIC %run ../_resources_outside/00-global-setup $reset_all_data=$reset_all_data $db_prefix=demand_level_forecasting
+# Get dbName and cloud_storage_path, reset and create database
+current_user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+if current_user.rfind('@') > 0:
+  current_user_no_at = current_user[:current_user.rfind('@')]
+else:
+  current_user_no_at = current_user
+current_user_no_at = re.sub(r'\W+', '_', current_user_no_at)
+
+dbName = db_prefix+"_"+current_user_no_at
+cloud_storage_path = f"/Users/{current_user}/field_demos/{db_prefix}"
+reset_all = dbutils.widgets.get("reset_all_data") == "true"
+
+if reset_all:
+  spark.sql(f"DROP DATABASE IF EXISTS {dbName} CASCADE")
+  dbutils.fs.rm(cloud_storage_path, True)
+
+spark.sql(f"""create database if not exists {dbName} LOCATION '{cloud_storage_path}/tables' """)
+spark.sql(f"""USE {dbName}""")
 
 # COMMAND ----------
 
 if (not user_based_data):
   cloud_storage_path = '/FileStore/tables/demand_forecasting_solution_accelerator/'
   dbName = 'demand_db' 
+
+# COMMAND ----------
+
+print(cloud_storage_path)
+print(dbName)
 
 # COMMAND ----------
 
@@ -52,4 +73,4 @@ else:
 
 # COMMAND ----------
 
-print("Ending ./_resources/00-setup")
+
