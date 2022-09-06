@@ -88,6 +88,10 @@ display(affected_skus_df)
 
 # COMMAND ----------
 
+display(affected_skus_df.select('Affetced_SKU', 'RAW', 'Date', 'Demand_SKU', 'Adjusted_Demand_SKU'))
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Get the amount of overplanning other raw materials
 # MAGIC If one raw material has a shortage, other raw materials in the specific SKU are overplanned and orders can be adjusted to reduce storage costs

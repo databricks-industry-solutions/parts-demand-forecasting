@@ -500,11 +500,20 @@ tuning_schema = StructType(
 
 # COMMAND ----------
 
+# To maximize parallelism, we can allocate each ("Product", SKU") group its own Spark task.
+# We can achieve this by:
+# - disabling Adaptive Query Execution (AQE) just for this step
+# - partitioning our input Spark DataFrame as follows:
+spark.conf.set("spark.databricks.optimizer.adaptive.enabled", "false")
+n_tasks = enriched_df.select("Product", "SKU").distinct().count()
+
 forecast_df = (
   enriched_df
-  .groupBy("Product", "SKU") 
+  .repartition(n_tasks, "Product", "SKU")
+  .groupBy("Product", "SKU")
   .applyInPandas(build_tune_and_score_model, schema=tuning_schema)
 )
+
 display(forecast_df)
 
 # COMMAND ----------
