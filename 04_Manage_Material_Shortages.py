@@ -86,14 +86,14 @@ affected_skus_df = (
                   join(min_fraction, ["SKU"]).
                   withColumnRenamed("available_demand", "Adjusted_Demand_Raw").
                   withColumn("Adjusted_Demand_SKU", f.floor(f.col("Demand_SKU") * f.col("min_fraction_raw")) ).
-                  select(f.col("RAW"), f.col("Date"), f.col("SKU").alias("Affetced_SKU"), f.col("Product").alias("Affected_Product"), f.col("Demand_RAW"), f.col("Adjusted_Demand_Raw"), f.col("Demand_SKU"), f.col("Adjusted_Demand_SKU"), f.col("min_fraction_raw").alias("Available_Fraction_For_SKU"))
+                  select(f.col("RAW"), f.col("Date"), f.col("SKU").alias("Affected_SKU"), f.col("Product").alias("Affected_Product"), f.col("Demand_RAW"), f.col("Adjusted_Demand_Raw"), f.col("Demand_SKU"), f.col("Adjusted_Demand_SKU"), f.col("min_fraction_raw").alias("Available_Fraction_For_SKU"))
 )
 
 display(affected_skus_df)
 
 # COMMAND ----------
 
-display(affected_skus_df.select('Affetced_SKU', 'RAW', 'Date', 'Demand_SKU', 'Adjusted_Demand_SKU'))
+display(affected_skus_df.select('Affected_SKU', 'RAW', 'Date', 'Demand_SKU', 'Adjusted_Demand_SKU'))
 
 # COMMAND ----------
 
@@ -104,7 +104,7 @@ display(affected_skus_df.select('Affetced_SKU', 'RAW', 'Date', 'Demand_SKU', 'Ad
 # COMMAND ----------
 
 raw_overplanning_df = (affected_skus_df.
-                        select(f.col("Affetced_SKU").alias("SKU"), f.col("Date"), f.col("Available_Fraction_For_SKU")).
+                        select(f.col("Affected_SKU").alias("SKU"), f.col("Date"), f.col("Available_Fraction_For_SKU")).
                         join(demand_raw_df, ["SKU", "Date"], how="inner").
                         withColumn("Demand_Raw_Adjusted", f.floor(f.col("Demand_RAW") * f.col("Available_Fraction_For_SKU"))).
                         select(f.col("RAW"), f.col("Date"), f.col("Demand_Raw"), f.col("Demand_Raw_Adjusted"))

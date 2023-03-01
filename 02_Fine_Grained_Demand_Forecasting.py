@@ -15,7 +15,7 @@
 # MAGIC In this notebook we first find an appropriate time series model and then apply that very same approach to train multiple models in parallel with great speed and cost-effectiveness.  
 # MAGIC 
 # MAGIC Key highlights for this notebook:
-# MAGIC - Use Databricks' collaborative and interactive notebook environment to find an appropriate time series mdoel
+# MAGIC - Use Databricks' collaborative and interactive notebook environment to find an appropriate time series model
 # MAGIC - Pandas UDFs (user-defined functions) can take your single-node data science code, and distribute it across different keys (e.g. SKU)  
 # MAGIC - Hyperopt can also perform hyperparameter tuning from within a Pandas UDF  
 
@@ -60,7 +60,7 @@ from pyspark.sql.types import *
 # MAGIC %md
 # MAGIC 
 # MAGIC ## Build a model
-# MAGIC *while levaraging Databricks' collaborative and interactive environment*
+# MAGIC *while leveraging Databricks' collaborative and interactive environment*
 
 # COMMAND ----------
 
@@ -131,7 +131,7 @@ score_exo = exo_df.iloc[~np.array(is_history)]
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The Holt's Winters Seasonal method models seasonal and trend components. Diffreent versions of it serve as a good first try. We observe a good fit to adopt to the time series and its irregular components in the training period but not in the forecasting horizon. This model does not do a good job for forecasting the Christmas effect or the recovery period after the pandemic started. 
+# MAGIC The Holt's Winters Seasonal method models seasonal and trend components. Different versions of it serve as a good first try. We observe a good fit to adopt to the time series and its irregular components in the training period but not in the forecasting horizon. This model does not do a good job for forecasting the Christmas effect or the recovery period after the pandemic started. 
 
 # COMMAND ----------
 
@@ -401,7 +401,7 @@ display(enriched_df)
 
 # MAGIC %md
 # MAGIC 
-# MAGIC #### Build, tune ansd score a model per each SKU with Pandas UDFs
+# MAGIC #### Build, tune and score a model per each SKU with Pandas UDFs
 
 # COMMAND ----------
 
@@ -423,7 +423,7 @@ def build_tune_and_score_model(sku_pdf: pd.DataFrame) -> pd.DataFrame:
   exo_fields = ["covid", "christmas", "new_year"]
 
 
-  # Evaluate model on the traing data set
+  # Evaluate model on the training data set
   def evaluate_model(hyperopt_params):
 
         # SARIMAX requires a tuple of Python integers
