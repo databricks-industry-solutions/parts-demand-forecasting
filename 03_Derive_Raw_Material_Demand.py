@@ -18,7 +18,7 @@
 # MAGIC 
 # MAGIC Key highlights for this notebook:
 # MAGIC - Solve large scale graph problems by using GraphX as a distributed graph processing framework on top of Apache Spark
-# MAGIC - Leverage the full support for property graphs to incorporate business knowlegde and the traverse the manufacturing value chain 
+# MAGIC - Leverage the full support for property graphs to incorporate business knowledge and the traverse the manufacturing value chain 
 
 # COMMAND ----------
 
@@ -83,7 +83,7 @@ edges = spark.createDataFrame([
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Prepration
+# MAGIC ### Preparation
 # MAGIC The goal is to map the forecasted demand values for each SKU to quantities of the raw materials (the input of the production line) that are needed to produce the associated finished product (the output of the production line). To this end, we need a table which lists for each SKU demand for a time point all raw materials that are needed for production (ideally also at that time point to reduce warehouse costs). We do this in two steps:
 # MAGIC - Step 1: Derive the SKU for each raw material.
 # MAGIC - Step 2: Derive the product of all quantities of all succeeding assembly steps (=edges) from a raw material point of view.
@@ -127,7 +127,7 @@ g = GraphFrame(vertices, edges)
 
 # MAGIC %md
 # MAGIC ### Step 1
-# MAGIC The following function uses the concept of aggrgated messaging to derive a table that maps the raw for each SKU. 
+# MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw for each SKU. 
 # MAGIC 
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
@@ -138,22 +138,22 @@ def get_sku_for_raw(gx):
   # Initiate Iteration
   iteration = 1
   
-  # Inititate the edges
-  updated_edges = gx.edges.select(f.col("src"),f.col("dst")).withColumn("aggregrated_parents", f.col("dst"))
+  # Initiate the edges
+  updated_edges = gx.edges.select(f.col("src"),f.col("dst")).withColumn("aggregated_parents", f.col("dst"))
   updated_edges = updated_edges.localCheckpoint()
  
-  # Inititate the vertices
+  # Initiate the vertices
   updated_vertices = gx.vertices
   updated_vertices = updated_vertices.localCheckpoint()
   
-  # Inititate the graph
+  # Initiate the graph
   g_for_loop = GraphFrame(updated_vertices, updated_edges)
   
   # Initiate vertices_with_agg_messages
   emptyRDD = spark.sparkContext.emptyRDD()
   schema = StructType([
     StructField('id', StringType(), True),
-    StructField('aggregrated_parents_from_parent', ArrayType(StringType(), True)),
+    StructField('aggregated_parents_from_parent', ArrayType(StringType(), True)),
     StructField('iteration', LongType(), True)
   ])
   vertices_with_agg_messages = spark.createDataFrame(emptyRDD,schema)
@@ -164,10 +164,10 @@ def get_sku_for_raw(gx):
     ####THE WHILE LOOP STARTS HERE############################################################################
     
     #Aggregated Messaging
-    msgToSrc = AM.edge["aggregrated_parents"]
+    msgToSrc = AM.edge["aggregated_parents"]
 
     agg = g_for_loop.aggregateMessages(
-     f.collect_set(AM.msg).alias("aggregrated_parents_from_parent"),
+     f.collect_set(AM.msg).alias("aggregated_parents_from_parent"),
      sendToSrc=msgToSrc,
      sendToDst=None
     )
@@ -175,7 +175,7 @@ def get_sku_for_raw(gx):
     agg = agg.withColumn("iteration", f.lit(iteration))
 
     if (iteration > 1):
-      agg = agg.withColumn("aggregrated_parents_from_parent",f.flatten(f.col("aggregrated_parents_from_parent")))
+      agg = agg.withColumn("aggregated_parents_from_parent",f.flatten(f.col("aggregated_parents_from_parent")))
 
 
     vertices_with_agg_messages = vertices_with_agg_messages.union(agg)
@@ -187,10 +187,10 @@ def get_sku_for_raw(gx):
     updated_edges = g_for_loop.edges
     updated_edges = (updated_edges.
       join(agg, updated_edges["dst"] == agg["id"], how="inner").
-      select(f.col("src"), f.col("dst"), f.col("aggregrated_parents_from_parent")).
-      withColumnRenamed("aggregrated_parents_from_parent", "aggregrated_parents").
-      withColumn("aggregrated_parents", f.array_union(f.col("aggregrated_parents"), f.array(f.col("dst")))).
-      select(f.col("src"), f.col("dst"), f.col("aggregrated_parents"))
+      select(f.col("src"), f.col("dst"), f.col("aggregated_parents_from_parent")).
+      withColumnRenamed("aggregated_parents_from_parent", "aggregated_parents").
+      withColumn("aggregated_parents", f.array_union(f.col("aggregated_parents"), f.array(f.col("dst")))).
+      select(f.col("src"), f.col("dst"), f.col("aggregated_parents"))
     )
     
     if (updated_edges.count() == 0):
@@ -213,14 +213,14 @@ def get_sku_for_raw(gx):
   vertices_with_agg_messages = helper.join(vertices_with_agg_messages, ["id", "iteration"],  how="inner")
 
   # Subset to furthermost children
-  in_degress_df = gx.inDegrees
+  in_degrees_df = gx.inDegrees
   raw_df = (vertices.
-   join( in_degress_df, ["id"], how='left_anti'))
+   join( in_degrees_df, ["id"], how='left_anti'))
   vertices_with_agg_messages = (raw_df.
-                               join(vertices_with_agg_messages, ["id"],how="inner").select(f.col("id"),f.col("aggregrated_parents_from_parent"))
+                               join(vertices_with_agg_messages, ["id"],how="inner").select(f.col("id"),f.col("aggregated_parents_from_parent"))
                               )
   vertices_with_agg_messages = (vertices_with_agg_messages.
-                                 withColumn("SKU", f.col("aggregrated_parents_from_parent").getItem(0)).
+                                 withColumn("SKU", f.col("aggregated_parents_from_parent").getItem(0)).
                                  select(f.col("id"), f.col("SKU"))
                               )
     
@@ -236,7 +236,7 @@ display(res1)
 
 # MAGIC %md
 # MAGIC ### Step 2
-# MAGIC The following function uses the concept of aggrgated messaging to derive a table that maps the raw to the quantity that is needed to produce the desired finished product. For each raw material it is the product of quantities of all succeeding assemlby steps.
+# MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw to the quantity that is needed to produce the desired finished product. For each raw material it is the product of quantities of all succeeding assembly steps.
 # MAGIC 
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
@@ -265,7 +265,7 @@ def get_quantity_of_raw_needed_for_its_fin(gx):
   ])
   vertices_with_agg_messages = spark.createDataFrame(emptyRDD,schema)
   
-  #Intita the iteration integer
+  #Initialize the iteration integer
   iteration = 1
   
   
@@ -323,9 +323,9 @@ def get_quantity_of_raw_needed_for_its_fin(gx):
   vertices_with_agg_messages = helper.join(vertices_with_agg_messages, ["id", "iteration"],  how="inner")
 
   # Subset to furthermost children
-  in_degress_df = g.inDegrees
+  in_degrees_df = g.inDegrees
   raw_df = (vertices.
-   join( in_degress_df, ["id"], how='left_anti' )
+   join( in_degrees_df, ["id"], how='left_anti' )
   )
   vertices_with_agg_messages = raw_df.join(vertices_with_agg_messages, ["id"], how="inner").select(f.col("id"),f.col("qty"))
     
@@ -371,7 +371,7 @@ display(demand_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC The BoM does not contain the mapping to SKU's. Threfore, we add an artifical assembly step with quantity 1
+# MAGIC The BoM does not contain the mapping to SKU's. Therefore, we add an artificial assembly step with quantity 1
 
 # COMMAND ----------
 
