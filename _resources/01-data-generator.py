@@ -222,15 +222,8 @@ pdf_helper = (pd.DataFrame(variance_random_number, columns =['Variance_RN']).
              )
 
 # Append column-wise
-spark_df_helper = spark.createDataFrame(pdf_helper, schema=arma_schema)
-spark_df_helper = spark_df_helper.withColumn("row_id", monotonically_increasing_id())
-product_identifier_lookup = product_identifier_lookup.withColumn("row_id", monotonically_increasing_id())
-product_identifier_lookup_extended = product_identifier_lookup.join(spark_df_helper, ("row_id")).drop("row_id")
-product_identifier_lookup = product_identifier_lookup.drop("row_id")
+product_identifier_lookup_extended = spark.createDataFrame(pd.concat([product_identifier_lookup.toPandas(), pdf_helper],axis=1))
 product_hierarchy_extended = product_hierarchy.join(product_identifier_lookup_extended.drop("SKU_Prefix"), ["Product"], how = "inner")
-assert product_identifier_lookup_extended.count() == product_identifier_lookup.count(), "Ambigious number of rows after join"
-
-display(product_hierarchy_extended)
 
 # COMMAND ----------
 
