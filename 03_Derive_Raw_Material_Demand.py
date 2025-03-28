@@ -12,10 +12,10 @@
 
 # MAGIC %md
 # MAGIC *Prerequisite: Make sure to run 01_Introduction_And_Setup and 02_Fine_Grained_Demand_Forecasting before running this notebook.*
-# MAGIC 
+# MAGIC
 # MAGIC While the previous notebook *(002_Fine_Grained_Demand_Forecasting)* demonstrated the benefits of one of the Databricks' approach to train multiple models in parallel with great speed and cost-effectiveness,
 # MAGIC in this part we show how to use Databricks' graph functionality to traverse the manufacturing value chain to find out how much raw material is needed for production.
-# MAGIC 
+# MAGIC
 # MAGIC Key highlights for this notebook:
 # MAGIC - Solve large scale graph problems by using GraphX as a distributed graph processing framework on top of Apache Spark
 # MAGIC - Leverage the full support for property graphs to incorporate business knowledge and the traverse the manufacturing value chain 
@@ -36,8 +36,8 @@
 
 # COMMAND ----------
 
-print(cloud_storage_path)
-print(dbName)
+#print(cloud_storage_path)
+print(dbname)
 
 # COMMAND ----------
 
@@ -128,7 +128,7 @@ g = GraphFrame(vertices, edges)
 # MAGIC %md
 # MAGIC ### Step 1
 # MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw for each SKU. 
-# MAGIC 
+# MAGIC
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
 # COMMAND ----------
@@ -237,7 +237,7 @@ display(res1)
 # MAGIC %md
 # MAGIC ### Step 2
 # MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw to the quantity that is needed to produce the desired finished product. For each raw material it is the product of quantities of all succeeding assembly steps.
-# MAGIC 
+# MAGIC
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
 # COMMAND ----------
@@ -354,9 +354,9 @@ display(aggregated_bom)
 
 # COMMAND ----------
 
-demand_df = spark.read.table(f"{dbName}.part_level_demand_with_forecasts")
-sku_mapper = spark.read.table(f"{dbName}.sku_mapper")
-bom = spark.read.table(f"{dbName}.bom")
+demand_df = spark.read.table(f"{catalog}.{dbname}.part_level_demand_with_forecasts")
+sku_mapper = spark.read.table(f"{catalog}.{dbname}.sku_mapper")
+bom = spark.read.table(f"{catalog}.{dbname}.bom")
 
 # COMMAND ----------
 
@@ -383,7 +383,7 @@ display(sku_mapper)
 
 # COMMAND ----------
 
-display(spark.sql(f"select distinct SKU from {dbName}.part_level_demand_with_forecasts"))
+display(spark.sql(f"select distinct SKU from {catalog}.{dbname}.part_level_demand_with_forecasts"))
 
 # COMMAND ----------
 
@@ -463,21 +463,25 @@ display(demand_raw_df)
 
 # COMMAND ----------
 
-forecast_df_delta_path = os.path.join(cloud_storage_path, 'forecast_raw')
+# forecast_df_delta_path = os.path.join(cloud_storage_path, 'forecast_raw')
 
 # COMMAND ----------
 
-# Write the data 
-demand_raw_df.write \
-.mode("overwrite") \
-.format("delta") \
-.save(forecast_df_delta_path)
+# # Write the data 
+# demand_raw_df.write \
+# .mode("overwrite") \
+# .format("delta") \
+# .save(forecast_df_delta_path)
 
 # COMMAND ----------
 
-spark.sql(f"DROP TABLE IF EXISTS {dbName}.forecast_raw")
-spark.sql(f"CREATE TABLE {dbName}.forecast_raw USING DELTA LOCATION '{forecast_df_delta_path}'")
+spark.sql(f"DROP TABLE IF EXISTS {catalog}.{dbname}.forecast_raw")
+demand_raw_df.write.mode("overwrite").saveAsTable(f"{catalog}.{dbname}.forecast_raw")
+#spark.sql(f"CREATE TABLE {dbName}.forecast_raw USING DELTA LOCATION '{forecast_df_delta_path}'")
 
 # COMMAND ----------
 
-display(spark.sql(f"SELECT * FROM {dbName}.forecast_raw"))
+display(spark.sql(f"SELECT * FROM {catalog}.{dbname}.forecast_raw"))
+
+# COMMAND ----------
+

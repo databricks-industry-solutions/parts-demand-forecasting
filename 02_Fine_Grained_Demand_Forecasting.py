@@ -11,9 +11,9 @@
 
 # MAGIC %md
 # MAGIC *Prerequisite: Make sure to run 01_Introduction_And_Setup before running this notebook.*
-# MAGIC 
+# MAGIC
 # MAGIC In this notebook we first find an appropriate time series model and then apply that very same approach to train multiple models in parallel with great speed and cost-effectiveness.  
-# MAGIC 
+# MAGIC
 # MAGIC Key highlights for this notebook:
 # MAGIC - Use Databricks' collaborative and interactive notebook environment to find an appropriate time series model
 # MAGIC - Pandas UDFs (user-defined functions) can take your single-node data science code, and distribute it across different keys (e.g. SKU)  
@@ -25,8 +25,9 @@
 
 # COMMAND ----------
 
-print(cloud_storage_path)
-print(dbName)
+#print(cloud_storage_path)
+print(dbname)
+print(catalog)
 
 # COMMAND ----------
 
@@ -58,7 +59,7 @@ from pyspark.sql.types import *
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC ## Build a model
 # MAGIC *while leveraging Databricks' collaborative and interactive environment*
 
@@ -69,7 +70,7 @@ from pyspark.sql.types import *
 
 # COMMAND ----------
 
-demand_df = spark.read.table(f"{dbName}.part_level_demand")
+demand_df = spark.read.table(f"{catalog}.{dbname}.part_level_demand")
 demand_df = demand_df.cache() # just for this example notebook
 
 # COMMAND ----------
@@ -323,7 +324,7 @@ displayHTML(f"The optimal parameters for the selected series with SKU '{pdf.SKU.
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC ## Train thousands of models at scale, any time
 # MAGIC *while still using your preferred libraries and approaches*
 
@@ -387,20 +388,20 @@ display(enriched_df)
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC 
+# MAGIC
 # MAGIC ### Solution: High-Level Overview
-# MAGIC 
+# MAGIC
 # MAGIC Benefits:
 # MAGIC - Pure Python & Pandas: easy to develop, test
 # MAGIC - Continue using your favorite libraries
 # MAGIC - Simply assume you're working with a Pandas DataFrame for a single SKU
-# MAGIC 
+# MAGIC
 # MAGIC <img src="https://github.com/PawaritL/data-ai-world-tour-dsml-jan-2022/blob/main/pandas-udf-workflow.png?raw=true" width=40%>
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC #### Build, tune and score a model per each SKU with Pandas UDFs
 
 # COMMAND ----------
@@ -500,7 +501,7 @@ tuning_schema = StructType(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC #### Run distributed processing: `groupBy("SKU")` + `applyInPandas(...)`
 
 # COMMAND ----------
@@ -528,21 +529,24 @@ display(forecast_df)
 
 # COMMAND ----------
 
-forecast_df_delta_path = os.path.join(cloud_storage_path, 'forecast_df_delta')
+# forecast_df_delta_path = os.path.join(cloud_storage_path, 'forecast_df_delta')
 
 # COMMAND ----------
 
-# Write the data 
-forecast_df.write \
-.mode("overwrite") \
-.format("delta") \
-.save(forecast_df_delta_path)
+# # Write the data 
+# forecast_df.write \
+# .mode("overwrite") \
+# .format("delta") \
+# .save(forecast_df_delta_path)
 
 # COMMAND ----------
 
-spark.sql(f"DROP TABLE IF EXISTS {dbName}.part_level_demand_with_forecasts")
-spark.sql(f"CREATE TABLE {dbName}.part_level_demand_with_forecasts USING DELTA LOCATION '{forecast_df_delta_path}'")
+spark.sql(f"DROP TABLE IF EXISTS {catalog}.{dbname}.part_level_demand_with_forecasts")
+forecast_df.write.mode("overwrite").saveAsTable(f"{catalog}.{dbname}.part_level_demand_with_forecasts")
+# spark.sql(f"CREATE TABLE {dbname}.part_level_demand_with_forecasts USING DELTA LOCATION '{forecast_df_delta_path}'")
 
 # COMMAND ----------
 
-display(spark.sql(f"SELECT * FROM {dbName}.part_level_demand_with_forecasts"))
+display(spark.sql(f"SELECT * FROM {catalog}.{dbname}.part_level_demand_with_forecasts"))
+# COMMAND ----------
+
